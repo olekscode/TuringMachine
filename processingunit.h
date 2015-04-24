@@ -12,7 +12,7 @@ class ProcessingUnit
     Head *mHead;
     Tape *mTape;
 
-    int mCurrHeadPosition;
+    //int mCurrHeadPosition;
     unsigned mCurrState;
 
     std::vector<Instruction>* mInstructions;
@@ -23,7 +23,6 @@ public:
 
     void step();
     unsigned getState() const;
-    int getCurrHeadPosition() const;
 
 private:
     void moveHeadLeft();

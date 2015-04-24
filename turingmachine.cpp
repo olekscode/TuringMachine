@@ -34,40 +34,25 @@ void TuringMachine::loadInstructionsFromFile(string pPath)
     ifs.close();
 }
 
-void TuringMachine::setTape(string pText)
+// TODO: consider storing the initial position of head together with the instructions.
+//       Still, they are inseparable.
+void TuringMachine::setTape(string pText, int pInitPos)
 {
-    mTape->setText(pText.c_str(), pText.size());
-    // TODO: set initial position
-    mHead->moveTo(&(*mTape)[0]);
+    mTape = new Tape(pText, pInitPos);
+    mHead->move(mTape->getInit());
+    mProcessingUnit = new ProcessingUnit(mHead, mTape, &mInstructions);
 }
 
 void TuringMachine::run()
 {
     ofstream ofs("log.txt");
 
-    // TODO: set final state
-    while (mProcessingUnit->getState() != 100) {
+    // TODO: dynamically set the final state
+    while (mProcessingUnit->getState() != FINAL_STATE) {
         mProcessingUnit->step();
 
-        string output = to_string(mProcessingUnit->getState()) + '\t';
-        string currTape = mTape->getText();
-
-        for (int i = 0; i < currTape.size(); ++i) {
-            if (i == mProcessingUnit->getCurrHeadPosition() + mTape->getOffset()) {
-                output += '[';
-            }
-            else if (i == mProcessingUnit->getCurrHeadPosition() + mTape->getOffset() + 1) {
-                output += ']';
-            }
-            else {
-                output += ' ';
-            }
-
-            output += currTape[i];
-        }
-        if (mProcessingUnit->getCurrHeadPosition() + mTape->getOffset() == currTape.size() - 1) {
-            output += ']';
-        }
+        string output = to_string(mProcessingUnit->getState()) + '\t'
+                + mTape->toStringWithCarriage(mHead->getCurrCell());
 
         ofs << output << endl;
     }
@@ -77,5 +62,5 @@ void TuringMachine::run()
 
 string TuringMachine::showTape() const
 {
-    return mTape->getText();
+    return mTape->toString();
 }

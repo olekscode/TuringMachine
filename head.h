@@ -2,14 +2,17 @@
 #define HEAD_H
 
 #include "exception.h"
+#include "tape.h"
+
 class Head
 {
-    char *mCurrSymbol;
+    TapeCell* mCurrCell;
 
 public:
     Head() = default;
 
-    void moveTo(char *pSymbol);
+    TapeCell* getCurrCell() const;
+    void move(TapeCell* pNewCell);
 
     char read() const;
     void write(char pChar);

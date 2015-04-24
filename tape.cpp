@@ -1,122 +1,275 @@
 #include "tape.h"
 
-Tape::Tape()
-    : mSize(0), mOffset(0)
+TapeCell::TapeCell(char pValue)
+    : value(pValue) {}
+
+// Could be shortened a bit
+// Could be optimized
+// TODO: Check if pText is not empty (consider the posibility
+//       of creating empty tapes)
+Tape::Tape(string pText, int pInitPos)
 {
-    mTape = new char[0];
-}
+    // if the initial position of head is after the last non-empty cell
+    if (pInitPos >= (int) pText.size()) {
+        initCell = new TapeCell(BLANC_SYMBOL);
+        TapeCell* curr = initCell;
 
-void Tape::setText(const char* pText, int pSize, int pInitPos)
-{
-    mTape = new char[pSize + 1];
-    mTape[pSize] = '\0';
+        // the tail of list
+        curr->next = new TapeCell('\0');
+        curr->next->prev = curr;
 
-    for (int i = 0; i < pSize; ++i) {
-        mTape[i] = pText[i];
+        if (pText.size() != 0) {
+            // write BLANK_SYMBOL into every cell from the initial head position
+            // to the last non-empty character
+            for (int i = pInitPos - 1; i >= (int) pText.size(); --i) {
+                curr->prev = new TapeCell(BLANC_SYMBOL);
+                curr->prev->next = curr;
+                curr = curr->prev;
+            }
+        }
+
+        // write the text
+        for (int i = (int) pText.size() - 1; i >= 0; --i) {
+            curr->prev = new TapeCell(pText[i]);
+            curr->prev->next = curr;
+            curr = curr->prev;
+        }
+
+        // the head of list
+        curr->prev = new TapeCell('\0');
+        curr->prev->next = curr;
     }
+    // if the initial position of head is before the first non-empty cell
+    else if (pInitPos < 0) {
+        initCell = new TapeCell(BLANC_SYMBOL);
+        TapeCell* curr = initCell;
 
-    mSize = pSize;
-    mOffset = pInitPos;
-}
+        // the head of list
+        curr->prev = new TapeCell('\0');
+        curr->prev->next = curr;
 
-char& Tape::operator [] (int pIndex)
-{
-    pIndex = pIndex + mOffset;
-
-    if (pIndex < 0) {
-        int lNewSize = mSize - pIndex;
-        char* lNewTape = new char[lNewSize + 1];
-        lNewTape[lNewSize] = '\0';
-
-        for (int i = 0; i < -pIndex; ++i) {
-            lNewTape[i] = 'E';
+        if (pText.size() != 0) {
+            // write BLANK_SYMBOL into every cell from the initial head position
+            // to the first non-empty character
+            for (int i = pInitPos + 1; i < 0; ++i) {
+                curr->next = new TapeCell(BLANC_SYMBOL);
+                curr->next->prev = curr;
+                curr = curr->next;
+            }
         }
 
-        for (int i = -pIndex; i < lNewSize; ++i) {
-            lNewTape[i] = mTape[i + pIndex];
+        // write the text
+        for (int i = 0; i < (int) pText.size(); ++i) {
+            curr->next = new TapeCell(pText[i]);
+            curr->next->prev = curr;
+            curr = curr->next;
         }
 
-        mTape = lNewTape;
-        mSize = lNewSize;
-        mOffset += -pIndex;
-
-        pIndex = 0;
+        // the tail of list
+        curr->next = new TapeCell('\0');
+        curr->next->prev = curr;
     }
-    else if (pIndex >= mSize) {
-        char* lNewTape = new char[pIndex + 2];
-        lNewTape[pIndex + 1] = '\0';
-
-        for (int i = 0; i < mSize; ++i) {
-            lNewTape[i] = mTape[i];
-        }
-
-        for (int i = mSize; i < pIndex + 1; ++i) {
-            lNewTape[i] = 'E';
-        }
-
-        mTape = lNewTape;
-        mSize = pIndex + 1;
-    }
+    // if the initial position of head is between
+    // the first and the last non-empty cells
     else {
-        shrinkToFit(pIndex);
-    }
+        initCell = new TapeCell(pText[pInitPos]);
 
-    return mTape[pIndex];
-}
+        TapeCell* curr = initCell;
 
-const char* Tape::getText()
-{
-    return mTape;
-}
-
-int Tape::getSize() const
-{
-    return mSize;
-}
-
-int Tape::getOffset() const
-{
-    return mOffset;
-}
-
-void Tape::shrinkToFit(int &pIndex)
-{
-    int lNumOfFirstEmptyCells = 0;
-    int lNumOfLastEmptyCells = 0;
-
-    for (int i = 0; i < mSize; ++i) {
-        if (mTape[i] == 'E')
-            ++lNumOfFirstEmptyCells;
-        else
-            break;
-    }
-
-    for (int i = mSize - 1; i >= 0; --i) {
-        if (mTape[i] == 'E')
-            ++lNumOfLastEmptyCells;
-        else
-            break;
-    }
-
-    int lNewBegin = lNumOfFirstEmptyCells;
-    int lNewEnd = mSize - lNumOfLastEmptyCells;
-
-    if (lNumOfFirstEmptyCells + lNumOfLastEmptyCells != 0
-          && pIndex >= lNewBegin
-          && pIndex < lNewEnd)
-    {
-        int lNewSize = lNewEnd - lNewBegin;
-        char* lNewTape = new char[lNewSize + 1];
-        lNewTape[lNewSize] = '\0';
-
-        for (int i = lNewBegin; i < lNewEnd; ++i) {
-            lNewTape[i - lNewBegin] = mTape[i];
+        // write the text from the initial head position to the first
+        // non-empty character
+        for (int i = pInitPos - 1; i >= 0; --i) {
+            curr->prev = new TapeCell(pText[i]);
+            curr->prev->next = curr;
+            curr = curr->prev;
         }
 
-        mTape = lNewTape;
-        mSize = lNewSize;
-        mOffset -= lNumOfFirstEmptyCells;
+        // the head of list
+        curr->prev = new TapeCell('\0');
+        curr->prev->next = curr;
 
-        pIndex -= lNumOfFirstEmptyCells;
+        curr = initCell;
+
+        // write the text from the initial head position to the last
+        // non-empty character
+        for (int i = pInitPos + 1; i < (int) pText.size(); ++i) {
+            curr->next = new TapeCell(pText[i]);
+            curr->next->prev = curr;
+            curr = curr->next;
+        }
+
+        // the tail of list
+        curr->next = new TapeCell('\0');
+        curr->next->prev = curr;
+    }
+}
+
+Tape::~Tape()
+{
+    // need to reach the first non-empty cell
+    TapeCell* curr = initCell->prev;
+
+    while (curr->value != '\0') {
+        curr = curr->prev;
+    }
+
+    // now delete all the succeding cells
+    curr = curr->next;
+    delete curr->prev;
+
+    while (curr->value != '\0') {
+        curr = curr->next;
+        delete curr->prev;
+    }
+
+    delete curr;
+}
+
+TapeCell* Tape::getInit() const
+{
+    return initCell;
+}
+
+TapeCell* Tape::getRight(TapeCell *pCurr)
+{
+    // if the head is being moved from the first/last empty cell, it should be deleted
+    // e.g. this is fine: 1[1]1.*.1.1.1, [E]1.1.*.1.1.1
+    //      but this isn't: E[1]1.*.1.1.1
+    if (pCurr->prev->value == '\0' && pCurr->value == BLANC_SYMBOL) {
+        delete pCurr->prev;
+        pCurr->prev = nullptr;
+        pCurr->value = '\0';
+
+        if (initCell == pCurr) {
+            initCell = initCell->next;
+        }
+    }
+
+    pCurr = pCurr->next;
+
+    // expanding the tape
+    if (pCurr->value == '\0') {
+        pCurr->value = BLANC_SYMBOL;
+        pCurr->next = new TapeCell('\0');
+        pCurr->next->prev = pCurr;
+    }
+
+    return pCurr;
+}
+
+TapeCell* Tape::getLeft(TapeCell *pCurr)
+{
+    // if the head is being moved from the first/last empty cell, it should be deleted
+    // e.g. this is fine: 1[1]1.*.1.1.1, [E]1.1.*.1.1.1
+    //      but this isn't: E[1]1.*.1.1.1
+    if (pCurr->next->value == '\0' && pCurr->value == BLANC_SYMBOL) {
+        delete pCurr->next;
+        pCurr->next = nullptr;
+        pCurr->value = '\0';
+
+        if (initCell == pCurr) {
+            initCell = initCell->prev;
+        }
+    }
+
+    pCurr = pCurr->prev;
+
+    // expanding the tape
+    if (pCurr->value == '\0') {
+        pCurr->value = BLANC_SYMBOL;
+        pCurr->prev = new TapeCell('\0');
+        pCurr->prev->next = pCurr;
+    }
+
+    return pCurr;
+}
+
+string Tape::toString() const
+{
+    // need to reach the first non-empty cell
+    TapeCell* curr = initCell->prev;
+
+    while (curr->value != '\0') {
+        curr = curr->prev;
+    }
+
+    curr = curr->next;
+
+    string text = "";
+
+    while (curr->value != '\0') {
+        text += curr->value;
+        curr = curr->next;
+    }
+
+    return text;
+}
+
+string Tape::toStringWithCarriage(TapeCell *pCurr) const
+{
+    // need to reach the first non-empty cell
+    TapeCell* curr = initCell->prev;
+
+    while (curr->value != '\0') {
+        curr = curr->prev;
+    }
+
+    curr = curr->next;
+
+    string text = "";
+
+    while (curr != pCurr) {
+        if (curr->value == '\0') {
+            // throw sth
+        }
+
+        text += '.';
+        text += curr->value;
+        curr = curr->next;
+    }
+
+    text += string("[") + curr->value + ']';
+    curr = curr->next;
+
+    while (curr->value != '\0') {
+        text += curr->value;
+        text += '.';
+        curr = curr->next;
+    }
+
+    return text;
+}
+
+bool Tape::isEmpty() const
+{
+    return initCell->value == BLANC_SYMBOL
+        && initCell->prev->value == '\0'
+        && initCell->next->value == '\0';
+}
+
+void Tape::clear()
+{
+    // need to reach the first non-empty cell
+    TapeCell* curr = initCell->prev;
+
+    while (curr->value != '\0') {
+        curr = curr->prev;
+    }
+
+    curr = curr->next;
+    initCell = curr;
+    initCell->value = BLANC_SYMBOL;
+
+    // to delete everything we're leaving behind
+    if (curr->next->value != '\0') {
+        curr = curr->next->next;
+
+        do {
+            delete curr->prev;
+            curr = curr->next;
+        } while (curr->value != '\0');
+
+        delete curr->prev;
+        initCell->next = curr;
     }
 }

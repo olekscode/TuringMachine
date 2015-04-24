@@ -1,47 +1,42 @@
-#ifndef TAPE_H
-#define TAPE_H
+#ifndef ALTTAPE
+#define ALTTAPE
+
+#include <string>
+#include <QDebug>
+
+using namespace std;
+
+class TapeCell
+{
+public:
+    char value;
+    TapeCell* next;
+    TapeCell* prev;
+
+    TapeCell(char pValue);
+};
 
 class Tape
 {
-    char* mTape;
-    int mSize;
-    int mOffset;
+    TapeCell* initCell;
 
-    // Symbol that represents an empty character
-    static const char emptyChar = 'E';
+    static const char BLANC_SYMBOL = 'E';
 
 public:
-    Tape();
+    Tape(string pText = "", int pInitPos = 0);
+    ~Tape();
 
-    // pInitPos is the index that represents the initial position of Head
-    // pInit is the length of pText
-    void setText(const char* pText, int pSize, int pInitPos = 0);
+    TapeCell* getInit() const;
 
-    // Makes Tape infinite by automatically expanding mTape
-    // Indices are calculated using the offset (therefore they never change)
-    //
-    // e.g. Consider the following code
-    // Tape tape("11*111", 6, 0);
-    // tape[-2] = '*'; // mTape == "*E11*111", mOffset == 2
-    // tape[0] = '*'; // mTape == "*E*1*111" (mTape[0 + 2])
-    char& operator [] (int pIndex);
+    TapeCell* getRight(TapeCell* pCurr);
+    TapeCell* getLeft(TapeCell* pCurr);
 
-    // returns the current state of tape as text
-    const char* getText();
+    string toString() const;
+    string toStringWithCarriage(TapeCell* pCurr) const;
 
-    // returns the number of characters from first non-empty
-    // to last non-empty character
-    int getSize() const;
-
-    // TODO: Remove this
-    int getOffset() const;
-
-    // TODO: implement these
     bool isEmpty() const;
     void clear();
-
-private:
-    void shrinkToFit(int &pIndex);
 };
 
-#endif // TAPE_H
+#endif // ALTTAPE
+

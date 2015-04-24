@@ -3,20 +3,22 @@
 ProcessingUnit::ProcessingUnit(Head *pHead, Tape *pTape,
                                std::vector<Instruction>* pInstructions)
     : mHead(pHead), mTape(pTape),
-      mCurrHeadPosition(0), mCurrState(0),
+      /*mCurrHeadPosition(0),*/ mCurrState(0),
       mInstructions(pInstructions)
 {
-    mHead->moveTo(&(*pTape)[0]);
+    mHead->move(pTape->getInit());
 }
 
 void ProcessingUnit::moveHeadLeft()
 {
-    mHead->moveTo(&(*mTape)[--mCurrHeadPosition]);
+    // TODO: consider optimizing this approach
+    mHead->move(mTape->getLeft(mHead->getCurrCell()));
 }
 
 void ProcessingUnit::moveHeadRight()
 {
-    mHead->moveTo(&(*mTape)[++mCurrHeadPosition]);
+    // TODO: consider optimizing this approach
+    mHead->move(mTape->getRight(mHead->getCurrCell()));
 }
 
 RightHandInstr ProcessingUnit::lookForInstruction() const
@@ -53,9 +55,4 @@ void ProcessingUnit::step()
 unsigned ProcessingUnit::getState() const
 {
     return mCurrState;
-}
-
-int ProcessingUnit::getCurrHeadPosition() const
-{
-    return mCurrHeadPosition;
 }

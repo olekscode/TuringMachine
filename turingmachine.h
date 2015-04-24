@@ -21,12 +21,14 @@ class TuringMachine
 
     std::vector<Instruction> mInstructions;
 
+    const unsigned FINAL_STATE = 100;
+
 public:
     TuringMachine();
     ~TuringMachine();
 
     void loadInstructionsFromFile(std::string pPath);
-    void setTape(std::string pText);
+    void setTape(std::string pText, int pInitPos = 0);
     void run();
 
     std::string showTape() const;

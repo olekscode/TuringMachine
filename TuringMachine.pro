@@ -2,7 +2,7 @@ TEMPLATE = app
 CONFIG += console
 CONFIG += c++11
 CONFIG -= app_bundle
-CONFIG -= qt
+#CONFIG -= qt
 
 SOURCES += main.cpp \
     turingmachine.cpp \
@@ -17,7 +17,7 @@ HEADERS += \
     turingmachine.h \
     processingunit.h \
     head.h \
-    tape.h \
     exception.h \
-    instruction.h
+    instruction.h \
+    tape.h
 

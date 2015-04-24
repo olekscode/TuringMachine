@@ -1,23 +1,28 @@
 #include "head.h"
 
-void Head::moveTo(char *pSymbol)
+TapeCell* Head::getCurrCell() const
 {
-    mCurrSymbol = pSymbol;
+    return mCurrCell;
+}
+
+void Head::move(TapeCell* pNewCell)
+{
+    mCurrCell = pNewCell;
 }
 
 char Head::read() const
 {
-    if (mCurrSymbol == nullptr)
+    if (mCurrCell == nullptr)
         throw new HeadPositionUndefined;
 
-    return *mCurrSymbol;
+    return mCurrCell->value;
 }
 
 void Head::write(char pChar)
 {
-    if (mCurrSymbol == nullptr)
+    if (mCurrCell == nullptr)
         throw new HeadPositionUndefined;
 
-    *mCurrSymbol = pChar;
+    mCurrCell->value = pChar;
 }
 

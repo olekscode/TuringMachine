@@ -1,6 +1,8 @@
 #include <iostream>
 
 #include "turingmachine.h"
+#include "tape.h"
+#include "exception.h"
 
 using namespace std;
 
